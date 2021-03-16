@@ -135,7 +135,7 @@ def train():
         optimizer.step()
 
         total_loss += loss.item()
-        log_interval = 200
+        log_interval = 20
         if batch % log_interval == 0 and batch > 0:
             cur_loss = total_loss / log_interval
             elapsed = time.time() - start_time
