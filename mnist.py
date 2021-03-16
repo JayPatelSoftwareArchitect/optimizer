@@ -72,7 +72,10 @@ class Net(nn.Module):
 net = Net()
 from test_op import Test_OP
 criterion = nn.CrossEntropyLoss()
-optimizer = Test_OP(net.parameters(), lr=0.001)
+# optimizer = torch.optim.SGD(net.parameters(), lr=0.001)
+optimizer = Test_OP(net.parameters(), lr=0.001,epsilon=1e-3,step=5e-3, race=0.08 )
+# scheduler = torch.optim.lr_scheduler.StepLR(optimizer, 1.0, gamma=0.0001)
+
 # from torch.utils.tensorboard import SummaryWriter
 
 # default `log_dir` is "runs" - we'll be more specific here
@@ -149,7 +152,7 @@ def plot_classes_preds(net, images, labels):
 
     return fig
 running_loss = 0.0
-for epoch in range(1):  # loop over the dataset multiple times
+for epoch in range(10):  # loop over the dataset multiple times
 
     for i, data in enumerate(trainloader, 0):
 
@@ -166,6 +169,7 @@ for epoch in range(1):  # loop over the dataset multiple times
         optimizer.step()
 
         running_loss += loss.item()
+        # scheduler.step()
         if i % 1000 == 999:    # every 1000 mini-batches...
 
             # ...log the running loss
@@ -178,4 +182,55 @@ for epoch in range(1):  # loop over the dataset multiple times
             #                 plot_classes_preds(net, inputs, labels),
             #                 global_step=epoch * len(trainloader) + i)
             running_loss = 0.0
+
+    running_loss = 0.0
+
+    for i, data in enumerate(testloader, 0):
+
+        inputs, labels = data
+        outputs = net(inputs)
+        loss = criterion(outputs, labels)
+        running_loss += loss.item()
+        if i % 1000 == 999:
+            print('testing loss',
+                            running_loss / 1000)
+            running_loss = 0.0
+
 print('Finished Training')
+# For epoch 1:
+#SGD:
+# training loss 2.302158164978027
+# training loss 2.2998192558288575
+# training loss 2.292562749862671
+# training loss 2.287133439540863
+# training loss 2.2726018540859223
+# training loss 2.234312132358551
+# training loss 2.0445919197797777
+# training loss 1.431033306211233
+# training loss 1.0104906366541981
+# training loss 0.9008196279257535
+# training loss 0.8370124964583665
+# training loss 0.7967864256612956
+# training loss 0.7708656269572676
+# training loss 0.7684128242842853
+# training loss 0.7023762980252505
+# testing loss 0.7415284909904003
+# testing loss 0.7127044718787074
+# Test_OP:
+# training loss 2.226482987458119
+# training loss 1.9013187088263457
+# training loss 1.96174062055588
+# training loss 1.9463353560808756
+# training loss 1.9179459318314693
+# training loss 1.885241109574359
+# training loss 1.9024646717961695
+# training loss 1.6414758518111312
+# training loss 1.8263822855471845
+# training loss 1.7641462569295108
+# training loss 1.7086121327713626
+# training loss 1.6470200779513324
+# training loss 1.5631816368229048
+# training loss 1.7243879706610605
+# training loss 1.7503606383185835
+# testing loss 1.1338042071418386
+# testing loss 1.0705032035401383

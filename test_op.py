@@ -12,10 +12,8 @@ def test_op(params,
          step_: float,
          lr: float,
          epsilon: float,
-         bool_s:bool):
-    r"""Functional API that performs Adam algorithm computation.
-
-    See :class:`~torch.optim.Adam` for details.
+         race: float):
+    r"""Functional API that performs experiment with dynamic optimizing
     """
 
     for i, param in enumerate(params):
@@ -29,21 +27,21 @@ def test_op(params,
         exp_avg_sq = torch.clamp(exp_avg_sqs[i], -2.7183, 2.7183) #Between -e and +e
         step = torch.mean(torch.abs(torch.angle(grad))).item() #mean|angle(gradient)|
         if step == 0.0:
-            bias_correction0 = 1 -epsilon #race condition
+            bias_correction0 = 1 -race #race condition
         else:
             bias_correction0 = 1 - math.exp(step) 
         
         grad = grad.add(param, alpha=epsilon) #tweeking epsilon
         
-        step_size = lr / (math.cos(step)) #calculating step size
+        step_size = lr #/ (math.cos(step)) #calculating step size
         # Decay the first and second moment running average coefficient #based on adam moving average
         exp_avg.mul_(bias_correction0).add_(grad, alpha=1 - bias_correction0)
-        exp_avg_sq.mul_(bias_correction0).addcmul_(grad, grad, value=1 - bias_correction0)
+        exp_avg_sq.mul_(bias_correction0).addcmul_(grad, grad, value=1 - step_)
    
         denom = (exp_avg_sq.sqrt() / math.sqrt(abs(bias_correction0))).add_(epsilon)
 
         param.addcdiv_(exp_avg, denom, value=-step_size)
-        # Bsed on this approch, the loss get's decresed drastically. Starts very high.
+        # Based on this approch, the loss get's decresed drastically. Starts very high.
         # training loss 2658.5133657789565
         # training loss 451.3037321710388
         # training loss 99.9511641255726
@@ -64,10 +62,10 @@ class Test_OP(Optimizer):
     r"""Implements algorithm.
     """
 
-    def __init__(self, params, lr=1e-3,epsilon=5e-5,step=6e-3):
+    def __init__(self, params, lr=1e-3,epsilon=1e-3,step=1e-3, race=0.3):
         if not 0.0 <= lr:
             raise ValueError("Invalid learning rate: {}".format(lr))
-        defaults = dict(lr=lr, epsilon=epsilon, step_=step)
+        defaults = dict(lr=lr, epsilon=epsilon, step_=step, race=race)
         super(Test_OP, self).__init__(params, defaults)
 
     def __setstate__(self, state):
@@ -120,18 +118,16 @@ class Test_OP(Optimizer):
                     # record the step after step update
                     state_steps.append(state['step'])
                     
-            bool_S = False
-            if state['step'] % 5 == 0:
-                bool_S = True
+
             test_op(params_with_grad,
                    grads,
                    exp_avgs,
                    exp_avgs_seq,
                    max_exp_avgs_seq,
                    state_steps,
-                   group['step_'],
-                   group['lr'],
-                   group['epsilon'],
-                   bool_S
+                   step_=group['step_'],
+                   lr=group['lr'],
+                   epsilon=group['epsilon'],
+                   race=group['race']
                 )
         return loss
