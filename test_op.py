@@ -2,7 +2,7 @@ import torch
 import math
 from torch.optim.optimizer import Optimizer
 from matplotlib import pyplot as plt
-
+import numpy as np
 def test_op(params,
          grads,
          exp_avgs,
@@ -25,11 +25,11 @@ def test_op(params,
 
         exp_avg = torch.clamp(exp_avgs[i], -2.7183, 2.7183) #Between -e and +e
         exp_avg_sq = torch.clamp(exp_avg_sqs[i], -2.7183, 2.7183) #Between -e and +e
-        step = torch.mean(torch.abs(torch.angle(grad))).item() #mean|angle(gradient)|
+        step = torch.mean(torch.angle(grad)).item() #mean|angle(gradient)|
         if step == 0.0:
-            bias_correction0 = 1 -race #race condition
+            bias_correction0 = 0.0 #race condition
         else:
-            bias_correction0 = 1 - math.exp(step) 
+            bias_correction0 = 1 - math.cos(step) 
         
         grad = grad.add(param, alpha=epsilon) #tweeking epsilon
         
@@ -37,8 +37,9 @@ def test_op(params,
         # Decay the first and second moment running average coefficient #based on adam moving average
         exp_avg.mul_(bias_correction0).add_(grad, alpha=1 - bias_correction0)
         exp_avg_sq.mul_(bias_correction0).addcmul_(grad, grad, value=1 - step_)
-   
-        denom = (exp_avg_sq.sqrt() / math.sqrt(abs(bias_correction0))).add_(epsilon)
+        if bias_correction0 == 0.0:
+            bias_correction0 = race - 1
+        denom = (exp_avg_sq.sqrt() / bias_correction0).add_(epsilon)
 
         param.addcdiv_(exp_avg, denom, value=-step_size)
         # Based on this approch, the loss get's decresed drastically. Starts very high.

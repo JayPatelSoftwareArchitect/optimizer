@@ -114,9 +114,9 @@ model = TransformerModel(ntokens, emsize, nhead, nhid, nlayers, dropout).to(devi
 criterion = nn.CrossEntropyLoss()
 lr = 5.0 # learning rate
 from test_op import Test_OP
-optimizer = Test_OP(model.parameters(), lr=lr)
+optimizer = Test_OP(model.parameters(), lr=lr,epsilon=1e-3,step=1e-3)
 scheduler = torch.optim.lr_scheduler.StepLR(optimizer, 1.0, gamma=0.95)
-
+# possible fixing in lr_scheduler.py for better performance // A possible pull request
 import time
 def train():
     model.train() # Turn on the train mode
@@ -165,7 +165,7 @@ def evaluate(eval_model, data_source):
 
 
 best_val_loss = float("inf")
-epochs = 3 # The number of epochs
+epochs = 5 # The number of epochs
 best_model = None
 
 for epoch in range(1, epochs + 1):
