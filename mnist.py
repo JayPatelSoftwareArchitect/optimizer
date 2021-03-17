@@ -73,7 +73,7 @@ net = Net()
 from test_op import Test_OP
 criterion = nn.CrossEntropyLoss()
 # optimizer = torch.optim.SGD(net.parameters(), lr=0.001)
-optimizer = Test_OP(net.parameters(), lr=0.001,epsilon=1e-3,step=5e-4, race=0.08 )
+optimizer = Test_OP(net.parameters() )
 # scheduler = torch.optim.lr_scheduler.StepLR(optimizer, 1.0, gamma=0.0001)
 
 # from torch.utils.tensorboard import SummaryWriter
@@ -166,7 +166,7 @@ for epoch in range(10):  # loop over the dataset multiple times
         outputs = net(inputs)
         loss = criterion(outputs, labels)
         loss.backward()
-        optimizer.step()
+        optimizer.step(loss)
 
         running_loss += loss.item()
         # scheduler.step()
@@ -217,20 +217,20 @@ print('Finished Training')
 # testing loss 0.7415284909904003
 # testing loss 0.7127044718787074
 # Test_OP:
-# training loss 2.285978277921677
-# training loss 2.249958394289017
-# training loss 1.8035817868709565
-# training loss 1.2590289020091294
-# training loss 1.110085984200239
-# training loss 1.0513305469080805
-# training loss 1.10959734877944
-# training loss 1.0073615509420633
-# training loss 1.0215128105506301
-# training loss 0.988982684917748
-# training loss 1.0001992547214031
-# training loss 0.9963507152870298
-# training loss 0.9683287844285369
-# training loss 0.9495452700704337
-# training loss 0.9475732265189291
-# testing loss 0.9212831709682942
-# testing loss 0.8807542300783098
+# training loss 1.5885282960832119
+# training loss 1.089546252740547
+# training loss 1.0247457354478537
+# training loss 1.2229390683472157
+# training loss 1.0608840029332787
+# training loss 0.9499033190403133
+# training loss 0.9038462284766138
+# training loss 0.8830068701255368
+# training loss 0.8613697876787628
+# training loss 0.844049470334663
+# training loss 0.8338151567872847
+# training loss 0.7930278820957756
+# training loss 0.7686133874587832
+# training loss 0.7057156665205258
+# training loss 0.7109067310094833
+# testing loss 0.7535951423037913
+# testing loss 0.7301316939567332

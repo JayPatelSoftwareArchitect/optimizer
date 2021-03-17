@@ -22,20 +22,22 @@ def test_op(params,
         grad = grads[i]
         if grad is None:
             continue
-        exp_avg = torch.clamp(exp_avgs[i], -1, 1) 
-        exp_avg_sq = torch.clamp(exp_avg_sqs[i], -1, 1) 
-        step = torch.mean(torch.angle(grad)).item() #mean|angle(gradient)|
+        exp_avg = exp_avgs[i] 
+        exp_avg_sq = exp_avg_sqs[i]
+        step = np.mean(np.angle(grad.numpy())) #mean|angle(gradient)|
         if step == 0.0:
-            bias_correction0 = 0.0 #race condition
+            bias_correction0 = step_ ** torch.log(race) 
         else:
-            bias_correction0 = 1 - math.cos(step) 
-        
+            bias_correction0 = 1 - math.sin(step) 
+
         grad = grad.add(param, alpha=epsilon) #tweeking epsilon
-        step_size = lr #/ (math.cos(step)) #calculating step size
+        step_size = lr #calculating step size
+        
         exp_avg.mul_(bias_correction0).add_(grad, alpha=1 - bias_correction0)
         exp_avg_sq.mul_(bias_correction0).addcmul_(grad, grad, value=1 - step_)
-        if bias_correction0 == 0.0:
-            bias_correction0 = race - 1
+        exp_avg = torch.clamp(exp_avgs[i], -1, 1) 
+        exp_avg_sq = torch.clamp(exp_avg_sqs[i], -1, 1) 
+        
         denom = (exp_avg_sq.sqrt() / bias_correction0).add_(epsilon)
         param.addcdiv_(exp_avg, denom, value=-step_size)
     
@@ -43,7 +45,8 @@ class Test_OP(Optimizer):
     r"""Implements algorithm.
     """
 
-    def __init__(self, params, lr=0.001,epsilon=1e-3,step=5e-3, race=0.01):
+    def __init__(self, params, lr=0.001, epsilon=2e-3, step=5e-4, race=0.07):
+        
         if not 0.0 <= lr:
             raise ValueError("Invalid learning rate: {}".format(lr))
         if not 0.0 <= epsilon:
@@ -69,10 +72,6 @@ class Test_OP(Optimizer):
             closure (callable, optional): A closure that reevaluates the model
                 and returns the loss.
         """
-        loss = None
-        if closure is not None:
-            with torch.enable_grad():
-                loss = closure()
 
         for group in self.param_groups:
             params_with_grad = []
@@ -105,7 +104,9 @@ class Test_OP(Optimizer):
                     state['step'] += 1
                     # record the step after step update
                     state_steps.append(state['step'])
-                    
+            if closure is not None:
+                group['race'] = closure
+
 
             test_op(params_with_grad,
                    grads,
@@ -118,4 +119,4 @@ class Test_OP(Optimizer):
                    epsilon=group['epsilon'],
                    race=group['race']
                 )
-        return loss
+      
