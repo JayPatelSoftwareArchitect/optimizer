@@ -73,7 +73,7 @@ net = Net()
 from test_op import Test_OP
 criterion = nn.CrossEntropyLoss()
 # optimizer = torch.optim.SGD(net.parameters(), lr=0.001)
-optimizer = Test_OP(net.parameters(), lr=0.001,epsilon=1e-3,step=5e-3, race=0.08 )
+optimizer = Test_OP(net.parameters(), lr=0.001,epsilon=1e-3,step=5e-4, race=0.08 )
 # scheduler = torch.optim.lr_scheduler.StepLR(optimizer, 1.0, gamma=0.0001)
 
 # from torch.utils.tensorboard import SummaryWriter
@@ -217,20 +217,20 @@ print('Finished Training')
 # testing loss 0.7415284909904003
 # testing loss 0.7127044718787074
 # Test_OP:
-# training loss 2.005109063386917
-# training loss 1.1559138179272412
-# training loss 1.0190480114221574
-# training loss 1.0074248986504972
-# training loss 0.9656956037767231
-# training loss 0.9237886722539551
-# training loss 0.9282933705211617
-# training loss 0.9853767641747836
-# training loss 1.0172209080951289
-# training loss 0.9841233909924049
-# training loss 1.0289503199588508
-# training loss 1.0542194178059
-# training loss 1.0265060019855956
-# training loss 0.9935324048214825
-# training loss 1.0228422834314987
-# testing loss 0.9205789826968684
-# testing loss 0.8981106047051726
+# training loss 2.285978277921677
+# training loss 2.249958394289017
+# training loss 1.8035817868709565
+# training loss 1.2590289020091294
+# training loss 1.110085984200239
+# training loss 1.0513305469080805
+# training loss 1.10959734877944
+# training loss 1.0073615509420633
+# training loss 1.0215128105506301
+# training loss 0.988982684917748
+# training loss 1.0001992547214031
+# training loss 0.9963507152870298
+# training loss 0.9683287844285369
+# training loss 0.9495452700704337
+# training loss 0.9475732265189291
+# testing loss 0.9212831709682942
+# testing loss 0.8807542300783098

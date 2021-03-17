@@ -15,16 +15,15 @@ def test_op(params,
          race: float):
     r"""Functional API that performs experiment with dynamic optimizing
     """
-
+    #g(i) = min(max(g(i)​,min_value),max_value) min_value = -1 max_value = 1 
+    
     for i, param in enumerate(params):
-        grads[i] = torch.clamp(grads[i], -2.7183, 2.7183) #Between -e and +e
+        grads[i] = torch.clamp(grads[i], -1, 1) 
         grad = grads[i]
-        
         if grad is None:
             continue
-
-        exp_avg = torch.clamp(exp_avgs[i], -2.7183, 2.7183) #Between -e and +e
-        exp_avg_sq = torch.clamp(exp_avg_sqs[i], -2.7183, 2.7183) #Between -e and +e
+        exp_avg = torch.clamp(exp_avgs[i], -1, 1) 
+        exp_avg_sq = torch.clamp(exp_avg_sqs[i], -1, 1) 
         step = torch.mean(torch.angle(grad)).item() #mean|angle(gradient)|
         if step == 0.0:
             bias_correction0 = 0.0 #race condition
@@ -32,41 +31,28 @@ def test_op(params,
             bias_correction0 = 1 - math.cos(step) 
         
         grad = grad.add(param, alpha=epsilon) #tweeking epsilon
-        
         step_size = lr #/ (math.cos(step)) #calculating step size
-        # Decay the first and second moment running average coefficient #based on adam moving average
         exp_avg.mul_(bias_correction0).add_(grad, alpha=1 - bias_correction0)
         exp_avg_sq.mul_(bias_correction0).addcmul_(grad, grad, value=1 - step_)
         if bias_correction0 == 0.0:
             bias_correction0 = race - 1
-            epsilon = race
         denom = (exp_avg_sq.sqrt() / bias_correction0).add_(epsilon)
-
         param.addcdiv_(exp_avg, denom, value=-step_size)
-        # Based on this approch, the loss get's decresed drastically. Starts very high.
-        # training loss 2658.5133657789565
-        # training loss 451.3037321710388
-        # training loss 99.9511641255726
-        # training loss 9.853981019621635
-        # training loss 6.713869736194611
-        # training loss 5.840474301636219
-        # training loss 2.4905565305948256
-        # training loss 4.694802947074175
-        # training loss 3.4495118505954743
-        # training loss 4.577337420463562
-        # training loss 5.225532374978066
-        # training loss 3.178789172887802
-        # training loss 2.7605492379665373
-        # training loss 2.7612814675569535
-        # training loss 2.8135490095615387
-
+    
 class Test_OP(Optimizer):
     r"""Implements algorithm.
     """
 
-    def __init__(self, params, lr=1e-3,epsilon=1e-3,step=1e-3, race=0.3):
+    def __init__(self, params, lr=0.001,epsilon=1e-3,step=5e-3, race=0.01):
         if not 0.0 <= lr:
             raise ValueError("Invalid learning rate: {}".format(lr))
+        if not 0.0 <= epsilon:
+            raise ValueError("Invalid epsilon : {}".format(epsilon))
+        if not 0.0 <= step:
+            raise ValueError("Invalid step : {}".format(step))
+        if not 0.0 <= race:
+            raise ValueError("Invalid epsilon : {}".format(race))    
+
         defaults = dict(lr=lr, epsilon=epsilon, step_=step, race=race)
         super(Test_OP, self).__init__(params, defaults)
 
