@@ -39,6 +39,7 @@ def test_op(params,
         exp_avg_sq.mul_(bias_correction0).addcmul_(grad, grad, value=1 - step_)
         if bias_correction0 == 0.0:
             bias_correction0 = race - 1
+            epsilon = race
         denom = (exp_avg_sq.sqrt() / bias_correction0).add_(epsilon)
 
         param.addcdiv_(exp_avg, denom, value=-step_size)
