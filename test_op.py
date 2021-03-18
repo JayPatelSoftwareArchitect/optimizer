@@ -7,12 +7,12 @@ def test_op(params,
          grads,
          exp_avgs,
          exp_avg_sqs,
-         max_exp_avg_sqs,
          state_steps,
          step_: float,
          lr: float,
          epsilon: float,
-         race: float):
+         race: float,
+         avg_loss):
     r"""Functional API that performs experiment with dynamic optimizing
     """
     #g(i) = min(max(g(i)​,min_value),max_value) min_value = -1 max_value = 1 
@@ -31,7 +31,7 @@ def test_op(params,
             bias_correction0 = 1 - math.sin(step) 
 
         grad = grad.add(param, alpha=epsilon) #tweeking epsilon
-        step_size = lr #calculating step size
+        step_size = lr * avg_loss  #calculating step size
         
         exp_avg.mul_(bias_correction0).add_(grad, alpha=1 - bias_correction0)
         exp_avg_sq.mul_(bias_correction0).addcmul_(grad, grad, value=1 - step_)
@@ -45,7 +45,7 @@ class Test_OP(Optimizer):
     r"""Implements algorithm.
     """
 
-    def __init__(self, params, lr=0.001, epsilon=2e-3, step=5e-4, race=0.07):
+    def __init__(self, params, lr=0.001, epsilon=1e-2, step=5e-3, race=0.07):
         
         if not 0.0 <= lr:
             raise ValueError("Invalid learning rate: {}".format(lr))
@@ -63,24 +63,36 @@ class Test_OP(Optimizer):
         super(Test_OP, self).__setstate__(state)
         for group in self.param_groups:
             group.setdefault('test_op', False)
+    @torch.no_grad()
+    def reset_after_epoch(self):
+        for group in self.param_groups:
+            for p in group['params']:
+                state = self.state[p]
+                # Lazy state initialization
+                state['step'] = 0
+                # Exponential moving average of gradient values
+                state['exp_avgs'] = torch.zeros_like(p, memory_format=torch.preserve_format)
+                # Exponential moving average of squared gradient values
+                state['exp_avgs_seq'] = torch.zeros_like(p, memory_format=torch.preserve_format)
+                state['avg_loss'] = None
 
     @torch.no_grad()
-    def step(self, closure=None):
+    def step(self, loss=None):
         """Performs a single optimization step.
 
         Args:
             closure (callable, optional): A closure that reevaluates the model
                 and returns the loss.
         """
+        isAvgLossSet = False
 
         for group in self.param_groups:
             params_with_grad = []
             grads = []
             exp_avgs = []
             exp_avgs_seq = []
-            max_exp_avgs_seq = []
             state_steps = []
-
+            
             for p in group['params']:
                 if p.grad is not None:
                     params_with_grad.append(p)
@@ -94,29 +106,32 @@ class Test_OP(Optimizer):
                         state['exp_avgs'] = torch.zeros_like(p, memory_format=torch.preserve_format)
                         # Exponential moving average of squared gradient values
                         state['exp_avgs_seq'] = torch.zeros_like(p, memory_format=torch.preserve_format)
-                        state['max_exp_avgs_seq'] = torch.zeros_like(p, memory_format=torch.preserve_format)
+                        state['avg_loss'] = None
 
                     exp_avgs.append(state['exp_avgs'])
                     exp_avgs_seq.append(state['exp_avgs_seq'])
-                    max_exp_avgs_seq.append(state['max_exp_avgs_seq'])
-
+                    
                     # update the steps for each param group update
                     state['step'] += 1
                     # record the step after step update
                     state_steps.append(state['step'])
-            if closure is not None:
-                group['race'] = closure
-
+            if isAvgLossSet == False and loss is not None:
+                group['race'] = loss
+                isAvgLossSet = True 
+                if state['avg_loss'] == None:
+                    state['avg_loss'] = loss
+                else :
+                    state['avg_loss'] = torch.mean(torch.stack([state['avg_loss'], loss]))
 
             test_op(params_with_grad,
                    grads,
                    exp_avgs,
                    exp_avgs_seq,
-                   max_exp_avgs_seq,
                    state_steps,
                    step_=group['step_'],
                    lr=group['lr'],
                    epsilon=group['epsilon'],
-                   race=group['race']
+                   race=group['race'],
+                   avg_loss=state['avg_loss']
                 )
       
