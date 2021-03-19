@@ -188,7 +188,6 @@ for epoch in range(30):  # loop over the dataset multiple times
             #                 global_step=epoch * len(trainloader) + i)
             running_loss = 0.0
 
-    optimizer.reset_after_epoch() #resets state 
     running_loss = 0.0
     accuracy = total_correct * 100 / total
     total_correct = 0
@@ -233,79 +232,18 @@ print('Finished Training')
 # testing loss 0.7415284909904003
 # testing loss 0.7127044718787074
 # Test_OP:
-# training loss 1.6338135780394076
-# training loss 1.1190108029693364
-# training loss 1.0901973182149232
-# training loss 0.9108199938144534
-# training loss 0.920561436627584
-# training loss 0.8430368340644054
-# training loss 0.8371156890373677
-# training loss 0.7873017362472019
-# training loss 0.7860973827544949
-# training loss 0.7633222482840393
-# training loss 0.7419457610772224
-# training loss 0.6938450459787855
-# training loss 0.6886203742609359
-# training loss 0.716971114214306
-# training loss 0.7098038397308556
-#  Current epoch accuracy: tensor(67.7783)
-# testing loss 0.8072343270705314
-# testing loss 0.7781512646827614
-#  Current epoch accuracy: tensor(72.5500)
-# training loss 1.0874489933837321
-# training loss 0.7517717505764449
-# training loss 0.6850757514339202
-# training loss 0.6545005107618636
-# training loss 0.6652295287948801
-# training loss 0.6872926002801396
-# training loss 0.6801109503376574
-# training loss 0.6617041466127266
-# training loss 0.6565554857996467
-# training loss 0.6626002474847482
-# training loss 0.6660469573085429
-# training loss 0.6379003160682624
-# training loss 0.638073895997979
-# training loss 0.6479522319560056
-# training loss 0.6393748551502358
-#  Current epoch accuracy: tensor(76.6867)
-# testing loss 0.7169805774148553
-# testing loss 0.6848432531358849
-#  Current epoch accuracy: tensor(75.5500)
-# training loss 0.963078390502982
-# training loss 0.653149830960232
-# training loss 0.6281752541588503
-# training loss 0.6476071642671013
-# training loss 0.6336052754438715
-# training loss 0.6182231155231711
-# training loss 0.6140982484028209
-# training loss 0.6088366661001201
-# training loss 0.6169185366351158
-# training loss 0.5964793686287594
-# training loss 0.6193688545185432
-# training loss 0.6255622619868955
-# training loss 0.6204389083062124
-# training loss 0.5678655926780776
-# training loss 0.629163765217585
-#  Current epoch accuracy: tensor(78.9983)
-# testing loss 0.5968382239678176
-# testing loss 0.5724192007627571
-#  Current epoch accuracy: tensor(80.1900)
-# training loss 0.9285543742862937
-# training loss 0.5601823847278138
-# training loss 0.5926299821456196
-# training loss 0.5896249209931702
-# training loss 0.6109274336606031
-# training loss 0.5707006000375259
-# training loss 0.5795952428242017
-# training loss 0.562569748197362
-# training loss 0.5986895466134592
-# training loss 0.5894144681801845
-# training loss 0.5713553309109412
-# training loss 0.577073297986819
-# training loss 0.5530529673647834
-# training loss 0.5815791349339852
-# training loss 0.6175166819450678
-#  Current epoch accuracy: tensor(80.4833)
-# testing loss 0.6282445477095607
-# testing loss 0.6044744485133852
-#  Current epoch accuracy: tensor(78.6900)
+# training loss 1.4146121299117804
+# training loss 1.0515470182970166
+# training loss 0.8997676745802164
+# training loss 0.9210348175950348
+# training loss 0.8437173630087637
+# training loss 0.796096006847336
+# training loss 0.8017516585960984
+# training loss 0.7297586165063549
+# training loss 0.7149010808631429
+# training loss 0.7119893821496517
+# training loss 0.6849273890582844
+# training loss 0.6501740739011147
+# training loss 0.6347336277334252
+# training loss 0.6395617391596315
+# training loss 0.6303229261846282
