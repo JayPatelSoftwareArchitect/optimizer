@@ -26,15 +26,15 @@ def test_op(params,
         
         step = np.mean(np.angle(grad.numpy())) #mean|angle(gradient)|
         if step == 0.0:
-            if isinstance(race, torch.Tensor):
-                bias_correction0 = step_ ** torch.log(race) 
+            if isinstance(avg_loss, torch.Tensor):
+                bias_correction0 = step_ ** torch.log(avg_loss) 
             else: 
                 bias_correction0 = step_ ** np.log(race) 
         
         else:
-            bias_correction0 = 1 - math.sin(step) 
-
-        grad = grad.add(param, alpha=epsilon) #tweeking epsilo
+            bias_correction0 = 1 - math.sin(step**torch.log(avg_loss)) 
+        
+        grad = grad.add(param, alpha=epsilon) #tweeking epsilon
         step_size = lr #calculating step size
 
         if avg_loss is not None:
@@ -56,7 +56,7 @@ class Test_OP(Optimizer):
     r"""Implements algorithm.
     """
 
-    def __init__(self, params, lr=0.001, epsilon=1e-3, step=5e-2, race=0.07):
+    def __init__(self, params, lr=0.001, epsilon=2e-3, step=5e-4, race=0.07):
         
         if not 0.0 <= lr:
             raise ValueError("Invalid learning rate: {}".format(lr))
