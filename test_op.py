@@ -17,7 +17,6 @@ def test_op(params,
     r"""Functional API that performs experiment with dynamic optimizing
     """
     #g(i) = min(max(g(i)​,min_value),max_value) min_value = -1 max_value = 1 
-    
     for i, param in enumerate(params):
         grads[i] = torch.clamp(grads[i], -1, 1) 
         grad = grads[i]
@@ -25,21 +24,21 @@ def test_op(params,
             continue
         
         step = np.mean(np.angle(grad.numpy())) #mean|angle(gradient)|
-        if step == 0.0:
-            if isinstance(avg_loss, torch.Tensor):
-                bias_correction0 = step_ ** torch.log(avg_loss) 
-            else: 
-                bias_correction0 = step_ ** np.log(race) 
         
+        bias_correction0 = None
+        if step == 0.0:
+            bias_correction0 = 1
+            
         else:
-            bias_correction0 = 1 - math.sin(step**torch.log(avg_loss)) 
+            bias_correction0 = 1- np.cos(step) 
         
         grad = grad.add(param, alpha=epsilon) #tweeking epsilon
         step_size = lr #calculating step size
 
         if avg_loss is not None:
             step_size = step_size * avg_loss # lr * average loss
-        
+            if step != 0.0:
+               step_size = step_size * step
         exp_avg = exp_avgs[i] 
         exp_avg_sq = exp_avg_sqs[i]
         
@@ -50,13 +49,13 @@ def test_op(params,
         exp_avg_sq = torch.clamp(exp_avg_sqs[i], -1, 1) 
         
         denom = (exp_avg_sq.sqrt() / bias_correction0).add_(epsilon)
-        param.addcdiv_(exp_avg, denom, value=-step_size)
+        param.addcdiv_(exp_avg, denom, value=-step_size)    
     
 class Test_OP(Optimizer):
     r"""Implements algorithm.
     """
 
-    def __init__(self, params, lr=0.001, epsilon=2e-3, step=5e-4, race=0.07):
+    def __init__(self, params, lr=0.001, epsilon=2e-3, step=5e-4, race=1e-7):
         
         if not 0.0 <= lr:
             raise ValueError("Invalid learning rate: {}".format(lr))
@@ -126,8 +125,6 @@ class Test_OP(Optimizer):
                     state_steps.append(state['step'])
             
             if loss is not None:
-                #optional loss based optimization of lr
-                group['race'] = loss
                 if state['avg_loss'] == None:
                     state['avg_loss'] = loss
                 else :
