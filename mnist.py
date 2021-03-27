@@ -16,11 +16,11 @@ transform = transforms.Compose(
     transforms.Normalize((0.5,), (0.5,))])
 
 # datasets
-trainset = torchvision.datasets.MNIST('./data',
+trainset = torchvision.datasets.FashionMNIST('./data',
     download=True,
     train=True,
     transform=transform)
-testset = torchvision.datasets.MNIST('./data',
+testset = torchvision.datasets.FashionMNIST('./data',
     download=True,
     train=False,
     transform=transform)
@@ -49,25 +49,25 @@ def matplotlib_imshow(img, one_channel=False):
     else:
         plt.imshow(np.transpose(npimg, (1, 2, 0)))
 
-class Net(nn.Module):
-    def __init__(self):
-        super(Net, self).__init__()
-        self.conv1 = nn.Conv2d(1, 6, 5)
-        self.pool = nn.MaxPool2d(2, 2)
-        self.conv2 = nn.Conv2d(6, 16, 5)
-        self.fc1 = nn.Linear(16 * 4 * 4, 120)
-        self.fc2 = nn.Linear(120, 84)
-        self.fc3 = nn.Linear(84, 10)
+# class Net(nn.Module):
+#     def __init__(self):
+#         super(Net, self).__init__()
+#         self.conv1 = nn.Conv2d(1, 600, 5)
+#         self.pool = nn.MaxPool2d(3, 3)
+#         self.conv2 = nn.Conv2d(600, 64*4, 5)
+#         self.fc1 = nn.Linear(16 * 4 * 4, 120)
+#         self.fc2 = nn.Linear(120, 84)
+#         self.fc3 = nn.Linear(84, 10)
 
-    def forward(self, x):
-        x = self.pool(F.relu(self.conv1(x)))
-        x = self.pool(F.relu(self.conv2(x)))
-        x = x.view(-1, 16 * 4 * 4)
-        x = F.relu(self.fc1(x))
-        x = F.relu(self.fc2(x))
-        x = self.fc3(x)
-        return x
-
+#     def forward(self, x):
+#         x = self.pool(F.relu(self.conv1(x)))
+#         x = self.pool(F.relu(self.conv2(x)))
+#         x = x.view(-1, 16 * 4 * 4)
+#         x = F.relu(self.fc1(x))
+#         x = F.relu(self.fc2(x))
+#         x = self.fc3(x)
+#         return x
+from test_m import Net
 
 net = Net()
 from test_op import Test_OP
