@@ -148,7 +148,11 @@ def _ntuple(n):
 
 
 _pair = _ntuple(2)
-
+import torchvision
+from matplotlib import pyplot
+import cv2
+import numpy as np
+rotate = torchvision.transforms.RandomRotation(360)
 class Sample(nn.Module):
     def __init__(self,
                  in_channels: int,
@@ -161,7 +165,8 @@ class Sample(nn.Module):
                  output_padding=_pair(0),
                  groups: int=1,
                  bias: bool=True,
-                 padding_mode: str = 'zeros' ) -> None:
+                 padding_mode: str = 'zeros',
+                 margin: int = 10 ) -> None:
         super(Sample, self).__init__()
         kernel_size = _pair(kernel_size)
         stride = _pair(stride)
@@ -187,6 +192,7 @@ class Sample(nn.Module):
         self.output_padding = output_padding
         self.groups = groups
         self.padding_mode = padding_mode
+        self.margin = margin
         # `_reversed_padding_repeated_twice` is the padding to be passed to
         # `F.pad` if needed (e.g., for non-zero padding types that are
         # implemented as two ops: padding + conv). `F.pad` accepts paddings in
@@ -242,6 +248,21 @@ class Sample(nn.Module):
                         self.padding, self.dilation, self.groups)
 
     def forward(self, input: Tensor) -> Tensor:
+        #input = rotate.forward(input)
+        w, h = input.shape[-1], input.shape[-2]
+        
+        im_num = input.detach().numpy()
+        
+        for i in range(4):
+            img = im_num[i][0]
+            for j in range(w):
+                for k in range(h):
+                    img[j][k] = int(img[j][k]*self.margin) 
+            
+        # pyplot.imshow(im_num[0][0])
+        # pyplot.show()
+        with torch.no_grad():
+            input.copy_(torch.tensor(im_num))
         x =  self._conv_forward(input, self.weight, self.bias)
         
         return x
@@ -249,9 +270,9 @@ class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
 
-        self.conv1 = Sample(1, 6, 5)
+        self.conv1 = Sample(1, 6, 5, margin=5)
         self.pool = nn.MaxPool2d(2, 2)
-        self.conv2 = Sample(6, 16, 5)
+        self.conv2 = Sample(6, 16, 5, margin=10)
         self.fc1 = nn.Linear(16 * 4 * 4, 120)
         self.fc2 = nn.Linear(120, 84)
         self.fc3 = nn.Linear(84, 10)
